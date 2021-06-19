@@ -5,11 +5,13 @@ require('dotenv').config();
 const Cache = require('../helper/cache');
 const movieObj = new Cache();
 
+
 const movieController = (req,res) => {
   let cityName = req.query.city;
   let requestKey = `movie-${cityName}`;
 
-  if(movieObj[requestKey]){
+
+  if(movieObj[requestKey] && Date.now()-movieObj[requestKey].timeStamp < 3000){
     res.json(movieObj[requestKey]);
     console.log('sent from cache');
   }else{
@@ -21,7 +23,10 @@ const movieController = (req,res) => {
           let movieObject = new Movie(item.title, item.overview, item.vote_average, item.vote_count, imageURL, item.popularity, item.release_date);
           arrOfMovies.push(movieObject);
         });
-        movieObj[requestKey] = arrOfMovies;
+        movieObj[requestKey] = {};
+        movieObj[requestKey].content = [];
+        movieObj[requestKey].content = arrOfMovies;
+        movieObj[requestKey].timeStamp = Date.now();
         res.send(arrOfMovies);
         console.log('sent from axios');
       })
